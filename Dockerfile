@@ -22,4 +22,4 @@ COPY . /app/src
 #RUN environments/local.env
 
 EXPOSE 80
-CMD ["python3", "api.py"]
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:80"]

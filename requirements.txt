@@ -6,11 +6,11 @@ click==6.7
 cryptography==2.2.2
 Flask==1.0.2
 Flask-API==1.0
+gunicorn
 idna==2.7
 itsdangerous==0.24
 Jinja2==2.10
 MarkupSafe==1.0
-#pkg-resources==0.0.0
 pycparser==2.18
 pyOpenSSL==18.0.0
 python-nmap==0.6.1
