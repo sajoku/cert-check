@@ -7,6 +7,7 @@ import pytz
 import requests
 import socket
 import ssl
+import sys
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from urllib.parse import urlparse as urlparser
@@ -40,14 +41,16 @@ class CertChecker:
 
         # get Subject Alternative Names
         san_name = self._get_extensions()
+#        print('san_name:', san_name)
 
         # get subject "Common Name"
         subj_name = self._verify_subject()
         if subj_name == 'nocn' and san_name:
             subj_name = True
-        else:
-            subj_name = False
+#        else:
+#            subj_name = False
 
+#        print('subj_name:', subj_name)
         return all((
             self._verify_version(),
             self._verify_date(),
@@ -63,6 +66,10 @@ class CertChecker:
         if parsed.netloc:
             domain = parsed.netloc
         else:
+#            if parsed.path:
+#                print('Ignoring following requests')
+#                sys.exit(0)
+
             self.logger.warning('URL must start with scheme (http / https).')
             url = '//{0}'.format(self.url)
             parsed = urlparser(url)
@@ -81,10 +88,11 @@ class CertChecker:
         s.settimeout(1)
         try:
             s.connect((self.domain, 443))
+            self.logger.info('Connected to port 443.')
             return True
         except:
             print('Cannot connect to port 443.')
-            self.logger.info('Cannot connect to port 443.')
+            self.logger.warning('Cannot connect to port 443.')
             return False
 
         s.close()
@@ -100,7 +108,7 @@ class CertChecker:
         cert = ssl.get_server_certificate((self.domain, 443))
         bycert = cert.encode('utf-8')
         content = x509.load_pem_x509_certificate(bycert, default_backend())
-        self.logger.info(content)
+#        self.logger.info(content)
         print('OK')
         self.logger.info('OK')
         return content
@@ -159,7 +167,7 @@ class CertChecker:
 
         if not cn:
             print('No CN field in the certificate.')
-            self.logger.info('No CN field in the certificate.')
+            self.logger.warning('No CN field in the certificate.')
             return 'nocn'
 
         return False
@@ -172,12 +180,15 @@ class CertChecker:
         san = self.content.extensions.get_extension_for_class(
             x509.SubjectAlternativeName)
         san_list = san.value.get_values_for_type(x509.DNSName)
-        self.logger.info('SAN: {0}'.format(san_list))
-        print('SAN: {0}'.format(san_list))
+#        self.logger.info('SAN: {0}'.format(san_list))
+#        print('SAN: {0}'.format(san_list))
         for name in san_list:
             if self.domain in name:
+                self.logger.info('SAN verification successfull')
+                print('SAN verification successfull')
                 return True
 
+        self.logger.warning('The domain name is missing in the SAN list')
         return False
 
     # TODO
