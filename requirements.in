@@ -1,0 +1,8 @@
+click
+cryptography>=2.3
+flask
+flask-api
+requests>=2.20.0
+pytz
+pyopenssl
+python-nmap
